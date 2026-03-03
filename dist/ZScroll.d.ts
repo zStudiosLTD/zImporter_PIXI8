@@ -20,6 +20,8 @@ export declare class ZScroll extends ZContainer {
     private onBeedDownBinded;
     private onBeedUpBinded;
     private onWheelBinded;
+    private onBeedNativeMoveBinded;
+    private onBeedNativeUpBinded;
     /**
      * Initialises the scroll component: resolves the required children (`beed`,
      * `scrollBar`, `scrollContent`), binds event handlers, and calculates the

@@ -20,6 +20,10 @@ export class ZScroll extends ZContainer {
     onBeedDownBinded;
     onBeedUpBinded;
     onWheelBinded;
+    // Native window listeners used during beed drag so movement outside the beed's
+    // hit area is still captured (PIXI pointermove stops when pointer leaves the object).
+    onBeedNativeMoveBinded = null;
+    onBeedNativeUpBinded = null;
     /**
      * Initialises the scroll component: resolves the required children (`beed`,
      * `scrollBar`, `scrollContent`), binds event handlers, and calculates the
@@ -170,6 +174,16 @@ export class ZScroll extends ZContainer {
         this.scrollArea?.removeAllListeners();
         this.beed?.removeAllListeners();
         document.body.removeEventListener("wheel", this.onWheelBinded);
+        if (this.onBeedNativeMoveBinded) {
+            window.removeEventListener("mousemove", this.onBeedNativeMoveBinded);
+            window.removeEventListener("touchmove", this.onBeedNativeMoveBinded);
+            this.onBeedNativeMoveBinded = null;
+        }
+        if (this.onBeedNativeUpBinded) {
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded);
+            window.removeEventListener("touchend", this.onBeedNativeUpBinded);
+            this.onBeedNativeUpBinded = null;
+        }
     }
     removeListeners() {
         this.removeEventListeners();
@@ -187,6 +201,34 @@ export class ZScroll extends ZContainer {
         this.scrollBarHeight = this.scrollBar.height;
         this.dragStartY = event.global.y;
         this.beedStartY = this.beed.y;
+        // Attach native window events so the drag continues even when the pointer
+        // moves outside the beed's PIXI hit area.
+        const onMove = (e) => {
+            const clientY = e instanceof TouchEvent ? e.touches[0].clientY : e.clientY;
+            const deltaY = (clientY - this.dragStartY) * 2; // same sensitivity as PIXI path
+            this.beed.y = this.beedStartY + deltaY;
+            if (this.beed.y < 0)
+                this.beed.y = 0;
+            if (this.beed.y > this.scrollBarHeight - this.beed.height)
+                this.beed.y = this.scrollBarHeight - this.beed.height;
+            const per = this.beed.y / (this.scrollBarHeight - this.beed.height);
+            this.scrollContent.y = -per * (this.contentHeight - this.scrollBarHeight);
+        };
+        const onUp = () => {
+            this.isBeedDragging = false;
+            window.removeEventListener("mousemove", this.onBeedNativeMoveBinded);
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded);
+            window.removeEventListener("touchmove", this.onBeedNativeMoveBinded);
+            window.removeEventListener("touchend", this.onBeedNativeUpBinded);
+            this.onBeedNativeMoveBinded = null;
+            this.onBeedNativeUpBinded = null;
+        };
+        this.onBeedNativeMoveBinded = onMove;
+        this.onBeedNativeUpBinded = onUp;
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        window.addEventListener("touchmove", onMove);
+        window.addEventListener("touchend", onUp);
     }
     onPointerMove(event) {
         if (!this.isDragging && !this.isBeedDragging)
@@ -212,6 +254,17 @@ export class ZScroll extends ZContainer {
     /** Ends the beed (thumb) drag. */
     onBeedUp() {
         this.isBeedDragging = false;
+        // Also clean up the native window listeners if they haven't fired yet.
+        if (this.onBeedNativeMoveBinded) {
+            window.removeEventListener("mousemove", this.onBeedNativeMoveBinded);
+            window.removeEventListener("touchmove", this.onBeedNativeMoveBinded);
+            this.onBeedNativeMoveBinded = null;
+        }
+        if (this.onBeedNativeUpBinded) {
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded);
+            window.removeEventListener("touchend", this.onBeedNativeUpBinded);
+            this.onBeedNativeUpBinded = null;
+        }
     }
     /**
      * Scrolls the content in response to a mouse-wheel event.
