@@ -13,4 +13,7 @@ export { ZCuePointsManager } from './ZCuePointsManager';
 export { ZTextInput } from './ZTextInput';
 export { ZNineSlice } from './ZNineSlice';
 export { ZSpine } from './ZSpine';
+// Re-export PIXI Application so browser examples can create an app
+// without needing a separate pixi.js CDN script (avoiding dual-instance issues).
+export { Application } from 'pixi.js';
 //# sourceMappingURL=index.js.map

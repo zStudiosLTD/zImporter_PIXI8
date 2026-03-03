@@ -13,4 +13,5 @@ export { ZCuePointsManager } from './ZCuePointsManager';
 export { ZTextInput } from './ZTextInput';
 export { ZNineSlice } from './ZNineSlice';
 export { ZSpine } from './ZSpine';
+export { Application } from 'pixi.js';
 //# sourceMappingURL=index.d.ts.map

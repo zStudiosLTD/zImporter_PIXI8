@@ -66,8 +66,15 @@ export class ZScroll extends ZContainer {
         const scrollBarHeight = this.scrollBar.height;
         const contentHeight = this.scrollContent.height;
 
-        // Clean up old mask & scroll area before rebuilding
+        // Clean up old mask & scroll area before rebuilding.
+        // IMPORTANT: clear scrollContent.mask BEFORE destroying the Graphics so
+        // PIXI v8 removes its internal mask-effect references first.
+        // Otherwise the destroyed Graphics (null _context / null texture source)
+        // remains in PIXI's hit-test and render pipelines, causing:
+        //   "Cannot read properties of null (reading 'containsPoint')"
+        //   "Cannot read properties of null (reading '_gpuData')"
         if (this.msk) {
+            if (this.scrollContent) this.scrollContent.mask = null;
             this.msk.removeAllListeners();
             this.msk.removeFromParent();
             this.msk.destroy({ children: true });
@@ -81,6 +88,7 @@ export class ZScroll extends ZContainer {
         }
 
         if (contentHeight <= scrollBarHeight) {
+            if (this.scrollContent) this.scrollContent.mask = null;
             this.scrollBar.setVisible(false);
             this.scrollContent.y = 0;
             return;

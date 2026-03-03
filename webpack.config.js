@@ -14,6 +14,13 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
+    alias: {
+      // @pixi/particle-emitter v5 was written for PIXI v6/v7.
+      // Its Particle class extends @pixi/sprite's Sprite, which is a v6 Sprite
+      // lacking updateLocalTransform() that PIXI v8's renderer requires.
+      // We redirect @pixi/sprite to our shim so Particle extends v8's Sprite.
+      '@pixi/sprite': path.resolve(__dirname, 'src/pixi-sprite-shim.ts'),
+    },
   },
   module: {
     rules: [

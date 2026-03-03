@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>zImporter PIXI8 Scene Example</title>
+    <!-- zimporter-pixi8 bundles pixi.js, spine-pixi-v8, gsap, and particle-emitter -->
+    <script src="./dist/zimporter-pixi8.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #222;
+            font-family: monospace;
+        }
+
+        #ui {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        #fps {
+            color: #fff;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        #scene-selector {
+            pointer-events: all;
+            font-size: 14px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+        }
+
+        #scene-selector option {
+            background: #333;
+            color: #fff;
+        }
+
+        #canvas-wrapper {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="ui">
+        <span id="fps">FPS: --</span>
+        <select id="scene-selector">
+            <option value="autoPlay">autoPlay</option>
+            <option value="chiliStrike">chiliStrike</option>
+            <option value="complexButton">complexButton</option>
+            <option value="egyptExport">egyptExport</option>
+            <option value="emitter">emitter</option>
+            <option value="fontExample">fontExample</option>
+            <option value="gameTest">gameTest</option>
+            <option value="goalinkoReel">goalinkoReel</option>
+            <option value="mainScene">mainScene</option>
+            <option value="robot">robot</option>
+            <option value="scroll">scroll</option>
+            <option value="simpleButton">simpleButton</option>
+            <option value="slider">slider</option>
+            <option value="spineWindmill">spineWindmill</option>
+            <option value="toggle">toggle</option>
+            <option value="wildWest">wildWest</option>
+            <option value="zStudioTest" selected>zStudioTest</option>
+        </select>
+    </div>
+    <div id="canvas-wrapper"></div>
+
+    <script>
+        (async () => {
+            // ── PIXI Application ─────────────────────────────────────────────
+            // zimporter bundles pixi.js and re-exports Application so we don't
+            // need a separate CDN script (which would cause a dual-instance conflict).
+            const app = new zimporter.Application();
+            await app.init({
+                width: window.innerWidth,
+                height: window.innerHeight,
+                backgroundColor: 0x222222,
+                antialias: true,
+                resizeTo: window,
+            });
+
+            document.getElementById('canvas-wrapper').appendChild(app.canvas);
+
+            // ── Update loop ──────────────────────────────────────────────────
+            zimporter.ZUpdatables.init(24);
+            app.ticker.add(() => {
+                zimporter.ZUpdatables.update();
+            });
+
+            // ── FPS display ──────────────────────────────────────────────────
+            const fpsEl = document.getElementById('fps');
+            let frameCount = 0;
+            let lastTime = performance.now();
+            app.ticker.add(() => {
+                frameCount++;
+                const now = performance.now();
+                const elapsed = now - lastTime;
+                if (elapsed >= 1000) {
+                    fpsEl.textContent = `FPS: ${((frameCount / elapsed) * 1000).toFixed(1)}`;
+                    frameCount = 0;
+                    lastTime = now;
+                }
+            });
+
+            // ── Scene loading ────────────────────────────────────────────────
+            let currentScene = null;
+
+            function loadScene(sceneName) {
+                // Tear down previous scene
+                if (currentScene) {
+                    app.stage.removeChildren();
+                    currentScene = null;
+                }
+
+                const sceneJsonPath = `./assets/${sceneName}/`;
+
+                currentScene = new zimporter.ZScene(sceneName + '_scene');
+                currentScene.load(sceneJsonPath, () => {
+                    // Add the scene display objects to the PIXI stage
+                    currentScene.loadStage(app.stage);
+
+                    // Auto-play any top-level ZTimeline children
+                    const stage = currentScene.sceneStage;
+                    for (const child of stage.children) {
+                        if (child instanceof zimporter.ZTimeline) {
+                            child.play();
+                        }
+                    }
+
+                    // Initial resize to fit the current window
+                    currentScene.resize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            // Load the initially selected scene
+            const selector = document.getElementById('scene-selector');
+            loadScene(selector.value);
+
+            // Switch scene when dropdown changes
+            selector.addEventListener('change', () => {
+                loadScene(selector.value);
+            });
+
+            // ── Window resize ────────────────────────────────────────────────
+            window.addEventListener('resize', () => {
+                if (currentScene) {
+                    currentScene.resize(window.innerWidth, window.innerHeight);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
