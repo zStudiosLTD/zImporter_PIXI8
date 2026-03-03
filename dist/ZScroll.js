@@ -3,6 +3,7 @@ import { ZContainer } from "./ZContainer";
 export class ZScroll extends ZContainer {
     scrollBarHeight = 0;
     contentHeight = 0;
+    /** Local-space Y at drag start (converted from global via toLocal). */
     dragStartY = 0;
     beedStartY = 0;
     isDragging = false;
@@ -32,9 +33,9 @@ export class ZScroll extends ZContainer {
         this.onBeedDownBinded = this.onBeedDown.bind(this);
         this.onBeedUpBinded = this.onBeedUp.bind(this);
         this.onWheelBinded = this.onWheel.bind(this);
-        this.beed = this.getChildByName("beed");
-        this.scrollBar = this.getChildByName("scrollBar");
-        this.scrollContent = this.getChildByName("scrollContent");
+        this.beed = this.getChildByName("beed", true);
+        this.scrollBar = this.getChildByName("scrollBar", true);
+        this.scrollContent = this.getChildByName("scrollContent", true);
         if (!this.beed || !this.scrollBar || !this.scrollContent) {
             console.warn("ZScroll requires 'beed', 'scrollBar', and 'scrollContent' children.");
             return;
@@ -49,21 +50,15 @@ export class ZScroll extends ZContainer {
      * the current dimensions of `scrollBar` and `scrollContent`.
      */
     calculateScrollBar() {
-        if (!this.scrollBar || !this.scrollContent) {
+        if (!this.scrollBar || !this.scrollContent)
             return;
-        }
         const scrollBarHeight = this.scrollBar.height;
-        const contentHeight = this.scrollContent.height;
-        // Clean up old mask & scroll area before rebuilding.
-        // IMPORTANT: clear scrollContent.mask BEFORE destroying the Graphics so
-        // PIXI v8 removes its internal mask-effect references first.
-        // Otherwise the destroyed Graphics (null _context / null texture source)
-        // remains in PIXI's hit-test and render pipelines, causing:
-        //   "Cannot read properties of null (reading 'containsPoint')"
-        //   "Cannot read properties of null (reading '_gpuData')"
+        // CRITICAL: remove any existing mask BEFORE measuring contentHeight.
+        // In PIXI v8 getBounds() (and thus .height) clips to the mask bounds,
+        // so if the mask is still applied we'd measure the viewport height
+        // instead of the full content height.
         if (this.msk) {
-            if (this.scrollContent)
-                this.scrollContent.mask = null;
+            this.scrollContent.mask = null;
             this.msk.removeAllListeners();
             this.msk.removeFromParent();
             this.msk.destroy({ children: true });
@@ -75,34 +70,42 @@ export class ZScroll extends ZContainer {
             this.scrollArea.destroy({ children: true });
             this.scrollArea = null;
         }
+        const contentHeight = this.scrollContent.height;
+        console.log(`[ZScroll] scrollBarHeight=${scrollBarHeight} contentHeight=${contentHeight}`);
+        if (scrollBarHeight === 0 && contentHeight === 0)
+            return;
         if (contentHeight <= scrollBarHeight) {
-            if (this.scrollContent)
-                this.scrollContent.mask = null;
+            console.log("[ZScroll] content fits, no scroll needed.");
             this.scrollBar.setVisible(false);
             this.scrollContent.y = 0;
             return;
         }
         this.scrollBar.setVisible(true);
         const w = this.scrollBar.x - this.scrollContent.x;
-        // PIXI v8 Graphics API: use method chaining with rect().fill()
+        // Mask at (0,0) — scrollContent.y is always reset to 0 below.
         this.msk = new Graphics();
-        this.msk.name = "mask";
-        this.msk.rect(0, 0, w, scrollBarHeight).fill({ color: 0x000000, alpha: 0.5 });
-        this.scrollContent.mask = this.msk;
+        this.msk.label = "mask";
+        this.msk.rect(0, 0, w, scrollBarHeight).fill(0x000000);
         this.addChild(this.msk);
+        this.scrollContent.mask = this.msk;
+        // Invisible hit region for drag events.
         this.scrollArea = new Graphics();
-        this.scrollArea.name = "scrollArea";
-        this.scrollArea.rect(0, 0, w, scrollBarHeight).fill({ color: 0x000000, alpha: 0.5 });
+        this.scrollArea.label = "scrollArea";
+        this.scrollArea.rect(0, 0, w, scrollBarHeight).fill({ color: 0x000000, alpha: 0.001 });
         this.addChildAt(this.scrollArea, 0);
-        this.scrollArea.interactive = true;
+        this.scrollArea.eventMode = "static"; // v8: replaces .interactive = true
         this.scrollContent.y = 0;
         this.scrollBar.y = 0;
+        // Cache content height — measured before mask was applied.
+        this.contentHeight = contentHeight;
+        console.log(`[ZScroll] w=${w} contentHeight=${contentHeight} beed.height=${this.beed?.height} beedMax=${scrollBarHeight - (this.beed?.height ?? 0)}`);
         this.addEventListeners();
         this.enableChildPassThrough();
     }
     /**
      * Forwards pointer events from interactive children (`ZButton`, `ZToggle`)
-     * inside `scrollContent` to the `scrollArea`.
+     * inside `scrollContent` to the `scrollArea`, so dragging over a button
+     * still scrolls the list.
      */
     enableChildPassThrough() {
         const scrollContent = this.scrollContent;
@@ -151,7 +154,8 @@ export class ZScroll extends ZContainer {
             this.scrollArea.on("touchend", this.onPointerUpBinded);
             this.scrollArea.on("touchendoutside", this.onPointerUpBinded);
         }
-        this.beed.interactive = true;
+        // PIXI v8: use eventMode instead of deprecated .interactive
+        this.beed.eventMode = "static";
         this.beed.on("pointerdown", this.onBeedDownBinded);
         this.beed.on("pointermove", this.onPointerMoveBinded);
         this.beed.on("pointerup", this.onBeedUpBinded);
@@ -170,15 +174,13 @@ export class ZScroll extends ZContainer {
     removeListeners() {
         this.removeEventListeners();
     }
-    /**
-     * Begins a drag on the scroll area.
-     * PIXI v8: event.global replaces event.data.global
-     */
+    // v8: event.global.y replaces v7's event.data.global.y
     onPointerDown(event) {
         this.isDragging = true;
         this.scrollBarHeight = this.scrollBar.height;
         this.dragStartY = event.global.y;
         this.beedStartY = this.beed.y;
+        console.log(`[ZScroll drag] scrollBarHeight=${this.scrollBarHeight} beed.height=${this.beed.height} beedMax=${this.scrollBarHeight - this.beed.height} contentHeight=${this.contentHeight}`);
     }
     onBeedDown(event) {
         this.isBeedDragging = true;
@@ -187,29 +189,33 @@ export class ZScroll extends ZContainer {
         this.beedStartY = this.beed.y;
     }
     onPointerMove(event) {
-        if (this.isDragging || this.isBeedDragging) {
-            const currentY = event.global.y;
-            const sensitivity = 2;
-            const deltaY = this.isDragging
-                ? (this.dragStartY - currentY) * sensitivity
-                : (currentY - this.dragStartY) * sensitivity;
-            this.beed.y = this.beedStartY + deltaY;
-            if (this.beed.y < 0)
-                this.beed.y = 0;
-            if (this.beed.y > this.scrollBarHeight - this.beed.height)
-                this.beed.y = this.scrollBarHeight - this.beed.height;
-            const per = this.beed.y / (this.scrollBarHeight - this.beed.height);
-            this.scrollContent.y =
-                -per * (this.scrollContent.height - this.scrollBarHeight);
-            event.stopPropagation();
-        }
+        if (!this.isDragging && !this.isBeedDragging)
+            return;
+        const currentY = event.global.y;
+        const sensitivity = 2;
+        const deltaY = this.isDragging
+            ? (this.dragStartY - currentY) * sensitivity // content drag: inverted
+            : (currentY - this.dragStartY) * sensitivity; // beed drag: direct
+        this.beed.y = this.beedStartY + deltaY;
+        if (this.beed.y < 0)
+            this.beed.y = 0;
+        if (this.beed.y > this.scrollBarHeight - this.beed.height)
+            this.beed.y = this.scrollBarHeight - this.beed.height;
+        const per = this.beed.y / (this.scrollBarHeight - this.beed.height);
+        this.scrollContent.y = -per * (this.contentHeight - this.scrollBarHeight);
+        event.stopPropagation();
     }
+    /** Ends the scroll-area drag. */
     onPointerUp() {
         this.isDragging = false;
     }
+    /** Ends the beed (thumb) drag. */
     onBeedUp() {
         this.isBeedDragging = false;
     }
+    /**
+     * Scrolls the content in response to a mouse-wheel event.
+     */
     onWheel(event) {
         if (!this.scrollingEnabled) {
             return;
@@ -222,13 +228,19 @@ export class ZScroll extends ZContainer {
         if (this.beed.y > this.scrollBarHeight - this.beed.height)
             this.beed.y = this.scrollBarHeight - this.beed.height;
         const per = this.beed.y / (this.scrollBarHeight - this.beed.height);
-        this.scrollContent.y =
-            -per * (this.scrollContent.height - this.scrollBarHeight);
+        this.scrollContent.y = -per * (this.contentHeight - this.scrollBarHeight);
         event.stopPropagation();
     }
+    /**
+     * Only recalculate when children are present (scrollBar/scrollContent
+     * assigned). applyTransform fires during setInstanceData, before children
+     * exist; calculateScrollBar's height guard handles that case gracefully.
+     */
     applyTransform() {
         super.applyTransform();
-        this.calculateScrollBar();
+        if (this.scrollBar && this.scrollContent) {
+            this.calculateScrollBar();
+        }
     }
 }
 //# sourceMappingURL=ZScroll.js.map

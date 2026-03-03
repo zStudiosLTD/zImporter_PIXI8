@@ -3,6 +3,7 @@ import { ZContainer } from "./ZContainer";
 export declare class ZScroll extends ZContainer {
     scrollBarHeight: number;
     contentHeight: number;
+    /** Local-space Y at drag start (converted from global via toLocal). */
     dragStartY: number;
     beedStartY: number;
     isDragging: boolean;
@@ -33,22 +34,29 @@ export declare class ZScroll extends ZContainer {
     private calculateScrollBar;
     /**
      * Forwards pointer events from interactive children (`ZButton`, `ZToggle`)
-     * inside `scrollContent` to the `scrollArea`.
+     * inside `scrollContent` to the `scrollArea`, so dragging over a button
+     * still scrolls the list.
      */
     private enableChildPassThrough;
     addEventListeners(): void;
     removeEventListeners(): void;
     removeListeners(): void;
-    /**
-     * Begins a drag on the scroll area.
-     * PIXI v8: event.global replaces event.data.global
-     */
     onPointerDown(event: FederatedPointerEvent): void;
     onBeedDown(event: FederatedPointerEvent): void;
     onPointerMove(event: FederatedPointerEvent): void;
+    /** Ends the scroll-area drag. */
     onPointerUp(): void;
+    /** Ends the beed (thumb) drag. */
     onBeedUp(): void;
+    /**
+     * Scrolls the content in response to a mouse-wheel event.
+     */
     onWheel(event: WheelEvent): void;
+    /**
+     * Only recalculate when children are present (scrollBar/scrollContent
+     * assigned). applyTransform fires during setInstanceData, before children
+     * exist; calculateScrollBar's height guard handles that case gracefully.
+     */
     applyTransform(): void;
 }
 //# sourceMappingURL=ZScroll.d.ts.map
