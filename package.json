@@ -1,0 +1,53 @@
+{
+  "name": "zimporter-pixi8",
+  "version": "1.0.0",
+  "description": "A TypeScript library for importing and managing zStudio scenes in PixiJS v8 applications.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/yonnyzohar/zImporter_PIXI",
+  "homepage": "https://zstudiosltd.com/",
+  "scripts": {
+    "build": "tsc",
+    "package": "tsc && webpack --config webpack.config.js",
+    "docs": "typedoc"
+  },
+  "keywords": ["pixi", "pixijs", "zstudio", "animation", "ui", "typescript"],
+  "author": "Yonathan Zohar",
+  "license": "MIT",
+  "devDependencies": {
+    "@esotericsoftware/spine-pixi-v8": "^4.2.106",
+    "@pixi/particle-emitter": "^5.0.8",
+    "@types/eslint": "^9.6.1",
+    "@types/gsap": "^3.0.0",
+    "@types/node": "^22.13.2",
+    "gsap": "^3.12.7",
+    "pixi-filters": "^6.0.0",
+    "pixi.js": "^8.16.0",
+    "ts-loader": "^9.5.2",
+    "typedoc": "^0.28.7",
+    "typescript": "^5.1.6",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
+  },
+  "peerDependencies": {
+    "gsap": "^3.12.7",
+    "pixi.js": "^8.16.0",
+    "@esotericsoftware/spine-pixi-v8": "^4.2.106",
+    "@pixi/particle-emitter": "^5.0.8",
+    "pixi-filters": "^6.0.0"
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "reflect-metadata": "^0.2.2"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "ignore": [
+    "node_modules",
+    "logs",
+    "*.log",
+    ".vscode"
+  ]
+}
