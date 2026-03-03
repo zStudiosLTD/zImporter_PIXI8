@@ -206,7 +206,7 @@ export class ZScroll extends ZContainer {
             this.onBeedNativeMoveBinded = null;
         }
         if (this.onBeedNativeUpBinded) {
-            window.removeEventListener("mouseup",  this.onBeedNativeUpBinded);
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded);
             window.removeEventListener("touchend", this.onBeedNativeUpBinded);
             this.onBeedNativeUpBinded = null;
         }
@@ -246,18 +246,18 @@ export class ZScroll extends ZContainer {
         const onUp = () => {
             this.isBeedDragging = false;
             window.removeEventListener("mousemove", this.onBeedNativeMoveBinded!);
-            window.removeEventListener("mouseup",   this.onBeedNativeUpBinded!);
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded!);
             window.removeEventListener("touchmove", this.onBeedNativeMoveBinded!);
-            window.removeEventListener("touchend",  this.onBeedNativeUpBinded!);
+            window.removeEventListener("touchend", this.onBeedNativeUpBinded!);
             this.onBeedNativeMoveBinded = null;
-            this.onBeedNativeUpBinded   = null;
+            this.onBeedNativeUpBinded = null;
         };
         this.onBeedNativeMoveBinded = onMove;
-        this.onBeedNativeUpBinded   = onUp;
+        this.onBeedNativeUpBinded = onUp;
         window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup",   onUp);
+        window.addEventListener("mouseup", onUp);
         window.addEventListener("touchmove", onMove);
-        window.addEventListener("touchend",  onUp);
+        window.addEventListener("touchend", onUp);
     }
 
     onPointerMove(event: FederatedPointerEvent) {
@@ -295,7 +295,7 @@ export class ZScroll extends ZContainer {
             this.onBeedNativeMoveBinded = null;
         }
         if (this.onBeedNativeUpBinded) {
-            window.removeEventListener("mouseup",  this.onBeedNativeUpBinded);
+            window.removeEventListener("mouseup", this.onBeedNativeUpBinded);
             window.removeEventListener("touchend", this.onBeedNativeUpBinded);
             this.onBeedNativeUpBinded = null;
         }
