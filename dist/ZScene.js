@@ -305,6 +305,20 @@ export class ZScene {
                 if (animTracks[combinedName]) {
                     frames[childInstanceName] = animTracks[combinedName];
                 }
+                else {
+                    // Fallback: the template name may contain underscores, causing the
+                    // exporter (which splits on the last '_') to store the key with only
+                    // part of the template name as the suffix. Re-derive the correct key
+                    // by matching against all known template names.
+                    for (const knownTemplate of Object.keys(templates)) {
+                        const suffix = "_" + knownTemplate;
+                        const candidateKey = childInstanceName + suffix;
+                        if (animTracks[candidateKey]) {
+                            frames[childInstanceName] = animTracks[candidateKey];
+                            break;
+                        }
+                    }
+                }
             }
         }
         return frames;

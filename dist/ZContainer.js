@@ -292,6 +292,20 @@ export class ZContainer extends PIXI.Container {
         this.pivot.x = this.currentTransform.pivotX || 0;
         this.pivot.y = this.currentTransform.pivotY || 0;
         this.visible = this.currentTransform.visible !== false;
+        // Apply Flash skew: skewY is Flash's X-axis angle (PIXI skew.y = skewY - rotation).
+        // Flash skewX is the Y-axis angle (PIXI skew.x = rotation - skewX).
+        if (this.currentTransform.skewY !== undefined) {
+            this.skew.y = this.currentTransform.skewY - this.rotation;
+        }
+        else {
+            this.skew.y = 0;
+        }
+        if (this.currentTransform.skewX !== undefined) {
+            this.skew.x = this.rotation - this.currentTransform.skewX;
+        }
+        else {
+            this.skew.x = 0;
+        }
         this.applyAnchor();
     }
     /**

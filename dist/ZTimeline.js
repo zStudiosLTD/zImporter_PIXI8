@@ -117,6 +117,14 @@ export class ZTimeline extends ZContainer {
                             this[k].alpha = frame.alpha;
                         if (frame.rotation != undefined)
                             this[k].rotation = frame.rotation;
+                        // Apply Flash skew: skewY is Flash's X-axis angle (PIXI skew.y = skewY - rotation).
+                        // Flash skewX is the Y-axis angle (PIXI skew.x = rotation - skewX).
+                        if (frame.skewY != undefined) {
+                            this[k].skew.y = frame.skewY - this[k].rotation;
+                        }
+                        if (frame.skewX != undefined) {
+                            this[k].skew.x = this[k].rotation - frame.skewX;
+                        }
                     }
                 }
             }
