@@ -592,5 +592,12 @@ export class ZContainer extends PIXI.Container {
         }
         this.emitter.emit = false;
     }
+    destroy(options) {
+        if (this.emitter) {
+            this.emitter.cleanup();
+            this.emitter = undefined;
+        }
+        super.destroy(options);
+    }
 }
 //# sourceMappingURL=ZContainer.js.map

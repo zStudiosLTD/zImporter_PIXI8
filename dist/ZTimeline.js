@@ -130,5 +130,10 @@ export class ZTimeline extends ZContainer {
             }
         }
     }
+    destroy(options) {
+        this.stop();
+        ZUpdatables.removeUpdateAble(this);
+        super.destroy(options);
+    }
 }
 //# sourceMappingURL=ZTimeline.js.map

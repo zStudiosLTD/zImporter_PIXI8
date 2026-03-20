@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import { ZContainer } from "./ZContainer";
 import { InstanceData } from "./SceneData";
 export declare class ZTimeline extends ZContainer {
@@ -26,5 +27,6 @@ export declare class ZTimeline extends ZContainer {
     gotoAndPlay(frameNum: number): void;
     update(): void;
     gotoAndStop(frameNum: number): void;
+    destroy(options?: Parameters<PIXI.Container['destroy']>[0]): void;
 }
 //# sourceMappingURL=ZTimeline.d.ts.map

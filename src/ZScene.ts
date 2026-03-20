@@ -60,7 +60,9 @@ export class ZScene {
     /** The base path for assets used in the scene, set during loading. */
     private assetBasePath: string = "";
     /** The loaded PIXI spritesheet for the scene, or null if not loaded. */
-    private scene: PIXI.Spritesheet | null = null;
+    private scene: PIXI.Spritesheet | { textures: Record<string, PIXI.Texture>; data?: any } | null = null;
+    /** Full-path aliases for individually-loaded images (non-atlas scenes). */
+    private _imageAliases: string[] | null = null;
     /** The root container for all scene display objects. */
     private _sceneStage: ZContainer = new ZContainer();
     /** The data describing the scene's structure, assets, and templates. */
@@ -203,17 +205,32 @@ export class ZScene {
     }
 
     async destroy(): Promise<void> {
-        const spritesheet = this.scene as PIXI.Spritesheet;
-        if (spritesheet) {
-            await spritesheet.parse();
-            // Destroy individual textures
-            for (const textureName in spritesheet.textures) {
-                spritesheet.textures[textureName].destroy();
+        const spritesheet = this.scene;
+        if (spritesheet && typeof (spritesheet as any).parse === 'function') {
+            // Atlas scene
+            const atlas = spritesheet as PIXI.Spritesheet;
+            await atlas.parse();
+            for (const textureName in atlas.textures) {
+                atlas.textures[textureName].destroy();
             }
             // PIXI v8: destroy the spritesheet (no baseTexture property)
-            spritesheet.destroy(true);
+            atlas.destroy(true);
+            await PIXI.Assets.unload(this.sceneName!);
+        } else if (this._imageAliases) {
+            // Non-atlas scene: destroy textures and unload each individual image by its full-path alias
+            if (this.scene) {
+                for (const textureName in this.scene.textures) {
+                    try { this.scene.textures[textureName].destroy(true); } catch (_) { /* already destroyed */ }
+                }
+            }
+            for (const alias of this._imageAliases) {
+                try { await PIXI.Assets.unload(alias); } catch (_) { /* already unloaded or missing */ }
+            }
+            this._imageAliases = null;
         }
-        await PIXI.Assets.unload(this.sceneName!);
+        this.scene = null;
+        this._sceneStage.destroy({ children: true });
+        this.resizeMap.clear();
     }
 
     async loadAssets(
@@ -239,15 +256,18 @@ export class ZScene {
             }
         } else {
             const imagesObj = this.createImagesObject(assetBasePath, placemenisObj);
-            try {
-                this.scene = await PIXI.Assets.load(
-                    imagesObj,
-                    _updateProgressFnctn
-                );
-                (this.scene as any).textures = this.scene;
-            } catch (err) {
-                console.error("Error loading images:", err);
+            const loadResult = await PIXI.Assets.load(imagesObj, _updateProgressFnctn);
+            // Build a texName→texture map so createFrame() can look up textures by
+            // short name while the global PIXI cache stores them under full-path aliases.
+            const sceneTextures: Record<string, PIXI.Texture> = {};
+            for (const imgInfo of imagesObj) {
+                const tex = loadResult[imgInfo.alias];
+                if (tex) sceneTextures[imgInfo._texName] = tex;
             }
+            this.scene = loadResult;
+            (this.scene as any).textures = sceneTextures;
+            // Keep track of registered full-path aliases for proper cleanup on destroy.
+            this._imageAliases = imagesObj.map(img => img.alias);
         }
 
         this.sceneName = _jsonPath;
@@ -312,8 +332,8 @@ export class ZScene {
     private createImagesObject(
         assetBasePath: string,
         obj: SceneData
-    ): { alias: string; src: string }[] {
-        const images: { alias: string; src: string }[] = [];
+    ): { alias: string; src: string; _texName: string }[] {
+        const images: { alias: string; src: string; _texName: string }[] = [];
         const record: any = {};
         const templates: Record<string, TemplateData> = obj.templates;
         for (const template in templates) {
@@ -330,9 +350,15 @@ export class ZScene {
                         texName = texName.endsWith("_IMG")
                             ? texName.slice(0, -4)
                             : texName;
+                        // Use the full path as alias to ensure uniqueness across scenes.
+                        // Scenes from different pages may share the same file name but
+                        // live in different directories — a short alias would collide in
+                        // PIXI's global Assets cache; the full path is guaranteed unique.
+                        const fullAlias = assetBasePath + imgData.filePath;
                         images.push({
-                            alias: texName,
-                            src: assetBasePath + imgData.filePath,
+                            alias: fullAlias,
+                            src: fullAlias + `?t=${Date.now()}`,
+                            _texName: texName,
                         });
                     }
                 }

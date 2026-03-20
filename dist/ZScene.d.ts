@@ -15,6 +15,8 @@ export declare class ZScene {
     private assetBasePath;
     /** The loaded PIXI spritesheet for the scene, or null if not loaded. */
     private scene;
+    /** Full-path aliases for individually-loaded images (non-atlas scenes). */
+    private _imageAliases;
     /** The root container for all scene display objects. */
     private _sceneStage;
     /** The data describing the scene's structure, assets, and templates. */

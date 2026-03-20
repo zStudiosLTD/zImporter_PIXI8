@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import { ZCuePointsManager } from "./ZCuePointsManager";
 import { ZContainer } from "./ZContainer";
 import { ZUpdatables } from "./ZUpdatables";
@@ -138,5 +139,11 @@ export class ZTimeline extends ZContainer {
                 }
             }
         }
+    }
+
+    public destroy(options?: Parameters<PIXI.Container['destroy']>[0]): void {
+        this.stop();
+        ZUpdatables.removeUpdateAble(this);
+        super.destroy(options);
     }
 }
