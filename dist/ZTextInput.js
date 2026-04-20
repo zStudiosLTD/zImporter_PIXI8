@@ -13,6 +13,10 @@ export class ZTextInput extends ZContainer {
         for (let prop in this.props.input) {
             let v = this.props.input[prop];
             if (v !== undefined) {
+                // CSS color properties expect a string; numeric values (hex integers) must be converted.
+                if (prop === 'color' && typeof v === 'number') {
+                    v = '#' + v.toString(16).padStart(6, '0');
+                }
                 this.textInput.setInputStyle(prop, v);
             }
         }
