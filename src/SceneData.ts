@@ -113,6 +113,7 @@ export interface SpineData extends BaseAssetData {
     playOnStart?: {
         value: boolean;
         animation: string;
+        loop: boolean;
     };
     slotAttachments?: Array<{ slotName: string; assetName: string; assetData: BaseAssetData }>;
 }

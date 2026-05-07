@@ -11,7 +11,7 @@ export declare class ZCuePointsManager {
      * Removes a previously registered callback for the named cue point.
      * If the callback is not found, the call is a no-op.
      * @param cuePoint - The name of the cue point.
-     * @param callback - The exact function reference passed to `addCuePointListener`.
+     * @param callback - The exact function reference that was passed to `addCuePointListener`.
      */
     static removeCuePointListener(cuePoint: string, callback: Function): void;
     /**

@@ -14,6 +14,8 @@ export declare class ZState extends ZContainer {
      * Falls back to `"idle"`, then the first child.
      */
     setState(str: string): ZContainer | null;
+    private playSpines;
+    private stopAllSpineAnims;
     getAllStateNames(): (string | null)[];
     getType(): string;
 }
