@@ -23,6 +23,7 @@ export class ZTimeline extends ZContainer {
 
     public setInstanceData(data: InstanceData, orientation: string): void {
         super.setInstanceData(data, orientation);
+        this.looping = data.looping ?? false;
         if (data.playOnStart) {
             this.play();
         }
