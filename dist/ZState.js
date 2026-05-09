@@ -34,13 +34,10 @@ export class ZState extends ZContainer {
                 if (child instanceof ZContainer) {
                     child.setVisible(false);
                     this.stopAllSpineAnims(child);
+                    this.stopAllTimelines(child);
                 }
                 else {
                     child.visible = false;
-                }
-                if (child instanceof ZTimeline) {
-                    child.stop();
-                    this.stopAllSpineAnims(child);
                 }
             }
         }
@@ -52,16 +49,42 @@ export class ZState extends ZContainer {
                 chosenChild.visible = true;
             }
             this.currentState = chosenChild;
-            chosenChild.parent.addChild(chosenChild);
-            if (chosenChild instanceof ZTimeline) {
-                chosenChild.gotoAndPlay(0);
+            if (chosenChild.parent) {
+                chosenChild.parent.addChild(chosenChild);
             }
-            if (chosenChild instanceof ZContainer) {
-                this.playSpines(chosenChild);
-            }
+            this.playAllTimelines(chosenChild);
+            this.playSpines(chosenChild);
             return chosenChild;
         }
         return null;
+    }
+    playAllTimelines(container) {
+        if (container instanceof ZTimeline) {
+            let t = container;
+            t.gotoAndPlay(0);
+        }
+        else {
+            for (let i = 0; i < container.children.length; i++) {
+                let child = container.children[i];
+                if (child instanceof ZContainer) {
+                    this.playAllTimelines(child);
+                }
+            }
+        }
+    }
+    stopAllTimelines(container) {
+        if (container instanceof ZTimeline) {
+            let t = container;
+            t.stop();
+        }
+        else {
+            for (let i = 0; i < container.children.length; i++) {
+                let child = container.children[i];
+                if (child instanceof ZContainer) {
+                    this.stopAllTimelines(child);
+                }
+            }
+        }
     }
     playSpines(container) {
         let drill = true;
