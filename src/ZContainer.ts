@@ -313,6 +313,32 @@ export class ZContainer extends PIXI.Container {
                     ? parseFloat(tf.style.fontSize)
                     : undefined;
         }
+        //at this moment the sybling that is masking may not be created yet. so wait. yes it's a hack for now...
+        if (data.mask) {
+            this.addMask(data.mask,0);
+
+        }
+    }
+
+    private addMask(mskName: string, retry:number): void {
+        if(retry >= 3)
+        {
+            return;
+        }
+        setTimeout(() => {
+            if (this.parent) {
+                let sybling = this.parent.getChildByName(mskName);
+                if (sybling) {
+                    this.mask = sybling as PIXI.Container;
+                }
+                else{
+                    this.addMask(mskName,retry+1);
+                }
+            }
+            else{
+                this.addMask(mskName,retry+1);
+            }
+        }, 50);
     }
 
     /**

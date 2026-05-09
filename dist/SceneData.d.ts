@@ -89,6 +89,7 @@ export interface InstanceData extends BaseAssetData {
     attrs?: InstanceAttributes;
     playOnStart?: boolean;
     looping?: boolean;
+    mask?: string;
 }
 export interface SpineData extends BaseAssetData {
     name: string;

@@ -88,6 +88,7 @@ export declare class ZContainer extends PIXI.Container {
      * Applies scene-editor instance data to this container.
      */
     setInstanceData(data: InstanceData, orientation: string): void;
+    private addMask;
     /**
      * When set to `true`, stretches this container to fill the entire screen.
      */
