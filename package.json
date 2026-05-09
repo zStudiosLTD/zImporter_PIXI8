@@ -1,10 +1,10 @@
 {
   "name": "zimporter-pixi8",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A TypeScript library for importing and managing zStudio scenes in PixiJS v8 applications.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/yonnyzohar/zImporter_PIXI",
+  "repository": "https://github.com/zStudiosLTD/zImporter_PIXI8",
   "homepage": "https://zstudiosltd.com/",
   "scripts": {
     "build": "tsc",
