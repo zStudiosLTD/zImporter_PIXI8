@@ -10,6 +10,7 @@ export class ZTimeline extends ZContainer {
     _frames: any;
     currentFrame: number = 0;
     looping: boolean = true;
+    playOnStart:boolean = true;
     cuePoints: Record<number, string> = {};
     func: ((self: ZTimeline) => void) | undefined;
 
@@ -24,8 +25,13 @@ export class ZTimeline extends ZContainer {
     public setInstanceData(data: InstanceData, orientation: string): void {
         super.setInstanceData(data, orientation);
         this.looping = data.looping ?? false;
-        if (data.playOnStart) {
-            this.play();
+        this.playOnStart = true;//we want animations to play by default unless explicitly told not to
+        if(data.playOnStart == false)
+        {
+            this.playOnStart = false;
+        }
+        if (this.playOnStart) {
+            this.gotoAndPlay(0);
         }
     }
 
