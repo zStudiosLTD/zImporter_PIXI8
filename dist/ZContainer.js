@@ -255,6 +255,17 @@ export class ZContainer extends PIXI.Container {
                     ? parseFloat(tf.style.fontSize)
                     : undefined;
         }
+        if (data.playOnStart) {
+            for (const child of this.children) {
+                if (child instanceof PIXI.AnimatedSprite) {
+                    child.loop = data.looping ?? false;
+                    if (!child.loop) {
+                        child.onComplete = () => { child.gotoAndStop(child.totalFrames - 1); };
+                    }
+                    child.play();
+                }
+            }
+        }
         //at this moment the sybling that is masking may not be created yet. so wait. yes it's a hack for now...
         if (data.mask) {
             this.addMask(data.mask, 0);
