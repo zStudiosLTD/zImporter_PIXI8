@@ -293,6 +293,8 @@ export class ZContainer extends PIXI.Container {
         this.currentTransform = orientation === "portrait" ? this.portrait : this.landscape;
         this.applyTransform();
         this.name = data.instanceName || "";
+         //add label for pixiv8
+        this.label = data.instanceName || "";
         this._props = data;
 
         if (data.attrs) {
