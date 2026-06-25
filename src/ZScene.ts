@@ -215,7 +215,8 @@ export class ZScene {
                 atlas.textures[textureName].destroy();
             }
             // PIXI v8: destroy the spritesheet (no baseTexture property)
-            atlas.destroy(true);
+            // no need to loop and destroy in Pixi*
+            //atlas.destroy(true);
             await PIXI.Assets.unload(this.sceneName!);
         } else if (this._imageAliases) {
             // Non-atlas scene: destroy textures and unload each individual image by its full-path alias
