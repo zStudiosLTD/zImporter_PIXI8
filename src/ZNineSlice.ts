@@ -14,16 +14,11 @@ export class ZNineSlice extends PIXI.NineSliceSprite {
     currentTransform: OrientationData;
 
     constructor(texture: PIXI.Texture, nineSliceData: NineSliceData, orientation: string) {
-        // Preserve the original positional mapping from the v7 code:
-        //   arg1 = nineSliceData.left  → leftWidth
-        //   arg2 = nineSliceData.right → topHeight  (original v7 ordering kept for parity)
-        //   arg3 = nineSliceData.top   → rightWidth
-        //   arg4 = nineSliceData.bottom→ bottomHeight
         super({
             texture,
             leftWidth: nineSliceData.left,
-            topHeight: nineSliceData.right,
-            rightWidth: nineSliceData.top,
+            topHeight: nineSliceData.top,
+            rightWidth: nineSliceData.right,
             bottomHeight: nineSliceData.bottom,
         });
         this.portrait = nineSliceData.portrait;
