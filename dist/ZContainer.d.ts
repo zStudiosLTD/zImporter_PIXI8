@@ -104,8 +104,9 @@ export declare class ZContainer extends PIXI.Container {
      */
     resize(width: number, height: number, orientation: "portrait" | "landscape"): void;
     /**
-     * Stretches this container (or its first `ZNineSlice` child) to cover the
-     * full browser viewport.
+     * Stretches this container's first `ZNineSlice` child to the full browser
+     * viewport or, for other content, scales this container uniformly so its
+     * content covers the viewport and is centered on it, cropping any overflow.
      */
     executeFitToScreen(): void;
     /**

@@ -420,8 +420,9 @@ export class ZContainer extends PIXI.Container {
     }
 
     /**
-     * Stretches this container (or its first `ZNineSlice` child) to cover the
-     * full browser viewport.
+     * Stretches this container's first `ZNineSlice` child to the full browser
+     * viewport or, for other content, scales this container uniformly so its
+     * content covers the viewport and is centered on it, cropping any overflow.
      */
     executeFitToScreen() {
         let children = this.children;
@@ -441,19 +442,18 @@ export class ZContainer extends PIXI.Container {
                 nineSlice.width = btmPoint.x - pos.x;
                 nineSlice.height = btmPoint.y - pos.y;
             } else {
-                if (window.innerWidth > window.innerHeight) {
-                    let rightPoint = this.parent.toLocal(new PIXI.Point(window.innerWidth, 0));
-                    this.width = rightPoint.x - pos.x;
-                    this.scaleY = this.scaleX;
-                } else {
-                    let btmPoint = this.parent.toLocal(new PIXI.Point(0, window.innerHeight));
-                    this.height = btmPoint.y - pos.y;
-                    this.scaleX = this.scaleY;
-                }
+                const content = this.getLocalBounds();
+                if (content.width === 0 || content.height === 0) return;
 
-                let midScreen = this.parent.toLocal(new PIXI.Point(window.innerWidth / 2, window.innerHeight / 2));
-                this.x = midScreen.x - this.width / 2;
-                this.y = midScreen.y - this.height / 2;
+                const btmPoint = this.parent.toLocal(new PIXI.Point(window.innerWidth, window.innerHeight));
+                const scale = Math.max((btmPoint.x - pos.x) / content.width, (btmPoint.y - pos.y) / content.height);
+                this.scaleX = scale;
+                this.scaleY = scale;
+
+                // The content need not start at this container's origin.
+                const midScreen = this.parent.toLocal(new PIXI.Point(window.innerWidth / 2, window.innerHeight / 2));
+                this.x = midScreen.x - (content.x + content.width / 2) * scale;
+                this.y = midScreen.y - (content.y + content.height / 2) * scale;
             }
         }
     }
