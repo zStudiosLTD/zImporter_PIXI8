@@ -455,7 +455,8 @@ export class ZScene {
                         tf.pivot.set(textInstanceNode.pivotX, textInstanceNode.pivotY);
                     }
                     tf.name = _name;
-                    mc[_name] = tf;
+                    if (_name !== "label")
+                        mc[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     if (textInstanceNode.x !== undefined)
                         tf.x = textInstanceNode.x;
@@ -487,7 +488,8 @@ export class ZScene {
                         tf.pivot.set(textInstanceNode.pivotX, textInstanceNode.pivotY);
                     }
                     tf.name = _name;
-                    mc[_name] = tf;
+                    if (_name !== "label")
+                        mc[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     tf.x = textInstanceNode.x;
                     tf.y = textInstanceNode.y;
@@ -573,7 +575,8 @@ export class ZScene {
                     tf.name = _name;
                     tf.x = textInstanceNode.x;
                     tf.y = textInstanceNode.y;
-                    mc[_name] = tf;
+                    if (_name !== "label")
+                        mc[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     this.applyFilters(childNode, tf);
                 }

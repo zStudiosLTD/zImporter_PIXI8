@@ -549,7 +549,7 @@ export class ZScene {
                         );
                     }
                     tf.name = _name;
-                    (mc as any)[_name] = tf;
+                    if (_name !== "label") (mc as any)[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     if (textInstanceNode.x !== undefined) tf.x = textInstanceNode.x;
                     if (textInstanceNode.y !== undefined) tf.y = textInstanceNode.y;
@@ -597,7 +597,7 @@ export class ZScene {
                         );
                     }
                     tf.name = _name;
-                    (mc as any)[_name] = tf;
+                    if (_name !== "label") (mc as any)[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     tf.x = textInstanceNode.x;
                     tf.y = textInstanceNode.y;
@@ -720,7 +720,7 @@ export class ZScene {
                     tf.name = _name;
                     tf.x = textInstanceNode.x;
                     tf.y = textInstanceNode.y;
-                    (mc as any)[_name] = tf;
+                    if (_name !== "label") (mc as any)[_name] = tf; // Container.label backs .name in Pixi 8
                     mc.addChild(tf);
                     this.applyFilters(childNode, tf);
                 }

@@ -3,6 +3,11 @@ import { Emitter } from "@pixi/particle-emitter";
 import { ZNineSlice } from './ZNineSlice';
 import TextInput from './text-input';
 import { Spine as SpineGameObject } from "@esotericsoftware/spine-pixi-v8";
+/** Copies stored transforms so instances of the same template never share them. */
+const cloneOrientation = (data) => data && ({
+    ...data,
+    ...(data.anchorPercentage ? { anchorPercentage: { ...data.anchorPercentage } } : {}),
+});
 /**
  * A custom container class extending `PIXI.Container` that supports orientation-based
  * transforms, anchoring, and instance data management for responsive layouts.
@@ -181,7 +186,7 @@ export class ZContainer extends PIXI.Container {
             if (tf instanceof TextInput || tf instanceof PIXI.BitmapText || !tf.style) {
                 return;
             }
-            tf.style = { ...tf.style, ...data };
+            Object.assign(tf.style, data);
             this.resizeText(tf);
         }
     }
@@ -201,11 +206,9 @@ export class ZContainer extends PIXI.Container {
             if ((maxWidth !== undefined && maxWidth > 0) || (maxHeight !== undefined && maxHeight > 0)) {
                 while ((maxWidth !== undefined && textChild.width > maxWidth) ||
                     (maxHeight !== undefined && textChild.height > maxHeight)) {
-                    style = new PIXI.TextStyle({
-                        ...style,
-                        fontSize: style.fontSize - 1,
-                    });
-                    textChild.style = style;
+                    if (style.fontSize <= 1)
+                        break;
+                    style.fontSize = style.fontSize - 1;
                 }
             }
         }
@@ -232,8 +235,8 @@ export class ZContainer extends PIXI.Container {
      * Applies scene-editor instance data to this container.
      */
     setInstanceData(data, orientation) {
-        this.portrait = data.portrait;
-        this.landscape = data.landscape;
+        this.portrait = cloneOrientation(data.portrait);
+        this.landscape = cloneOrientation(data.landscape);
         this.currentTransform = orientation === "portrait" ? this.portrait : this.landscape;
         this.applyTransform();
         this.name = data.instanceName || "";

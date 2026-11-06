@@ -100,6 +100,7 @@ export class ZScroll extends ZContainer {
         this.scrollArea.eventMode = "static"; // v8: replaces .interactive = true
         this.scrollContent.y = 0;
         this.scrollBar.y = 0;
+        this.beed.y = 0;
         // Cache content height — measured before mask was applied.
         this.contentHeight = contentHeight;
         console.log(`[ZScroll] w=${w} contentHeight=${contentHeight} beed.height=${this.beed?.height} beedMax=${scrollBarHeight - (this.beed?.height ?? 0)}`);

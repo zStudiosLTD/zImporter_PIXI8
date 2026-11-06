@@ -31,6 +31,13 @@ interface EmitterConfig {
     [key: string]: any;
 }
 
+
+/** Copies stored transforms so instances of the same template never share them. */
+const cloneOrientation = (data: OrientationData): OrientationData => data && ({
+    ...data,
+    ...(data.anchorPercentage ? { anchorPercentage: { ...data.anchorPercentage } } : {}),
+});
+
 /**
  * A custom container class extending `PIXI.Container` that supports orientation-based
  * transforms, anchoring, and instance data management for responsive layouts.
@@ -230,7 +237,7 @@ export class ZContainer extends PIXI.Container {
             if (tf instanceof TextInput || tf instanceof PIXI.BitmapText || !tf.style) {
                 return;
             }
-            tf.style = { ...tf.style, ...data };
+            Object.assign(tf.style, data);
             this.resizeText(tf);
         }
     }
@@ -254,11 +261,8 @@ export class ZContainer extends PIXI.Container {
                     (maxWidth !== undefined && textChild.width > maxWidth) ||
                     (maxHeight !== undefined && textChild.height > maxHeight)
                 ) {
-                    style = new PIXI.TextStyle({
-                        ...style,
-                        fontSize: (style.fontSize as number) - 1,
-                    });
-                    textChild.style = style;
+                    if ((style.fontSize as number) <= 1) break;
+                    style.fontSize = (style.fontSize as number) - 1;
                 }
             }
         }
@@ -288,8 +292,8 @@ export class ZContainer extends PIXI.Container {
      * Applies scene-editor instance data to this container.
      */
     public setInstanceData(data: InstanceData, orientation: string): void {
-        this.portrait = data.portrait;
-        this.landscape = data.landscape;
+        this.portrait = cloneOrientation(data.portrait);
+        this.landscape = cloneOrientation(data.landscape);
         this.currentTransform = orientation === "portrait" ? this.portrait : this.landscape;
         this.applyTransform();
         this.name = data.instanceName || "";

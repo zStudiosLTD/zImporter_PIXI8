@@ -157,19 +157,25 @@ The package exposes several classes and methods for interacting with imported as
 
 #### `Transform Properties and Orientation`
 
-`x`, `y`, `scale`, `width`, and `height` should always be set via `ZContainer`'s methods (e.g. `setX`, `setY`, `setScale`) rather than assigned directly on the PIXI properties. This ensures that changes are stored against the active orientation (portrait or landscape) and survive any resize/reorientation event.
-
-`visibility`, `alpha`, and `rotation`, however, apply to **both** orientations and can be set directly:
+Every element stores a `portrait` and a `landscape` transform, and every resize re-applies the one for the current orientation. Anything not in the stored transform is undone at the next resize.
 
 ```ts
-mc.visible = false;   // applies in both portrait and landscape
-mc.alpha = 0.5;       // applies in both orientations
-mc.rotation = 0.3;    // applies in both orientations
+mc.x = 100;              // stored for the current orientation
+mc.scaleX = 1.5;         // stored for the current orientation (mc.scale.x is NOT stored)
+mc.rotation = 0.3;       // stored for both orientations
+mc.setVisible(false);    // stored for both orientations (mc.visible = false is NOT stored)
+mc.setAlpha(0.5);        // stored for both orientations (mc.alpha = 0.5 is NOT stored)
 
-mc.setX(100);         // stored per-orientation — use this instead of mc.x = 100
-mc.setY(200);         // stored per-orientation
-mc.setScaleX(1.5);    // stored per-orientation
+// Move it for good, with a position for each orientation
+mc.portrait.x = 120;
+mc.landscape.x = 40;
+mc.applyTransform();
+
+// Your code owns the position (player, projectile)
+mc.resizeable = false;
 ```
+
+Full guide: https://zstudiosltd.com/z-importer/guide/responsive
 
 #### `Working with Spine`
 
@@ -217,6 +223,13 @@ Once you have the `Spine` reference you can interact with it exactly as you woul
 * Only one child is visible at a time.
 * Use `.setState(name: string)` to switch visible content.
 * Can contain nested `ZTimeline` objects.
+
+
+## AI skills
+
+The [`skills/`](./skills) folder has short guides that teach an AI tool to use this package correctly: setup, components, responsive layout, animation and spawning. Add the folder in zStudio under **Help → AI Skill Libraries**, or point your AI tool at `node_modules/zimporter-pixi8/skills/`.
+
+Usage guide with examples: https://zstudiosltd.com/z-importer/guide
 
 ## Contributing
 

@@ -119,6 +119,7 @@ export class ZScroll extends ZContainer {
 
         this.scrollContent.y = 0;
         this.scrollBar.y = 0;
+        this.beed.y = 0;
 
         // Cache content height — measured before mask was applied.
         this.contentHeight = contentHeight;

@@ -15,7 +15,10 @@ export class ZSceneStack {
         if (this.stackSize > 0) {
             this.top--;
             this.stackSize--;
-            return this.stack[this.top];
+            const scene = this.stack[this.top];
+            // Drop the slot so a popped scene no longer receives resize or spawn calls.
+            this.stack.length = this.top;
+            return scene;
         }
         return null;
     }

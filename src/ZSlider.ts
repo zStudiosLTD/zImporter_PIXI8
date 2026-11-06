@@ -29,6 +29,8 @@ export class ZSlider extends ZContainer {
         this.onDragEndBinded = this.onDragEnd.bind(this);
         this.onDragBinded = this.onDrag.bind(this);
 
+        handle.interactive = true; // plain containers get no pointer events otherwise
+
         handle
             .on("pointerdown", this.onDragStartBinded)
             .on("touchstart", this.onDragStartBinded);
