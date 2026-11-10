@@ -1,4 +1,3 @@
-import { gsap } from 'gsap';
 import * as PIXI from 'pixi.js';
 import { ZContainer } from "./ZContainer";
 import { InstanceData } from './SceneData';

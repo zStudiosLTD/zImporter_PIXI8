@@ -31,10 +31,16 @@ mc.x = 120; // other orientation unchanged
 
 **Animate and come back.** Use a wrapper. In zStudio, nest the art in an inner container named `content`; the outer one keeps the layout. Setting `x`/`y` writes into the stored transform of the current orientation, so a tween on a laid-out element can store wrong values if the screen rotates mid-tween.
 ```ts
-import { gsap } from 'gsap';
 const content = mc.get('content') as ZContainer;
 const startY = content.y;
-gsap.to(content, { y: startY - 30, duration: 0.15, yoyo: true, repeat: 1 });
+// Any tween library works; this hop uses Pixi's shared ticker.
+let t = 0;
+const hop = () => {
+  t = Math.min(1, t + PIXI.Ticker.shared.deltaMS / 300);
+  content.y = startY - 30 * Math.sin(Math.PI * t);
+  if (t === 1) PIXI.Ticker.shared.remove(hop);
+};
+PIXI.Ticker.shared.add(hop);
 ```
 
 **Anchored elements.** Positions do not stick. Change the anchor (0 to 1), or animate an inner wrapper.
