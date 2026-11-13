@@ -10,6 +10,10 @@ The `zImporter` is a TypeScript package designed to import and manage graphical 
 
 * Download zStudios to get started: https://zstudiosltd.com/
 
+## Community & Support
+
+Questions, bug reports or something to show off? Join the zImporter channel on the zStudio Discord: https://discord.com/channels/1570547074414547094/1570777267804835931
+
 ## Installation
 
 To install the `zImporter` package from the npm registry:
